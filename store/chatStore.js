@@ -78,14 +78,12 @@ export const useChatStore = create((set) => ({
   // Reactions
   toggleReaction: (messageId, emoji) =>
     set((state) => {
-      const reactions = state.messageReactions[messageId] || [];
-      const updated = reactions.includes(emoji)
-        ? reactions.filter((e) => e !== emoji)
-        : [...reactions, emoji];
+      const currentReaction = state.messageReactions[messageId];
+      const updated = currentReaction === emoji ? undefined : emoji;
       return {
         messageReactions: {
           ...state.messageReactions,
-          [messageId]: updated.length > 0 ? updated : undefined,
+          [messageId]: updated,
         },
       };
     }),

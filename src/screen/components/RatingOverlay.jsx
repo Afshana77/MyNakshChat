@@ -5,9 +5,9 @@ import {
   Modal,
   TouchableOpacity,
   StyleSheet,
-  BlurView,
   Dimensions,
 } from 'react-native';
+import { COLORS, SIZES, ALERT_MESSAGES } from '../../constants/theme';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -33,9 +33,11 @@ export default function RatingOverlay({ visible, onRatingSelect }) {
 
         {/* Rating Card */}
         <View style={styles.ratingCard}>
-          <Text style={styles.thankYouText}>Thank You!</Text>
+          <Text style={styles.thankYouText}>
+            {ALERT_MESSAGES.RATING_THANK_YOU}
+          </Text>
           <Text style={styles.subtitle}>
-            How was your session?
+            {ALERT_MESSAGES.RATING_QUESTION}
           </Text>
 
           {/* Star Rating */}
@@ -90,12 +92,12 @@ const styles = StyleSheet.create({
   },
   blurBackdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: COLORS.backdropDark,
   },
   ratingCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 24,
+    backgroundColor: COLORS.white,
+    borderRadius: SIZES.radiusLg,
+    padding: SIZES.xl,
     width: SCREEN_WIDTH - 40,
     alignItems: 'center',
     shadowColor: '#000',
@@ -105,26 +107,26 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   thankYouText: {
-    fontSize: 28,
+    fontSize: SIZES.fontXxl,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
+    color: COLORS.text,
+    marginBottom: SIZES.xs,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 24,
+    fontSize: SIZES.fontLg,
+    color: COLORS.textLight,
+    marginBottom: SIZES.xl,
     textAlign: 'center',
   },
   starsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    paddingHorizontal: 20,
-    marginBottom: 16,
+    paddingHorizontal: SIZES.lg,
+    marginBottom: SIZES.md,
   },
   starButton: {
-    padding: 8,
+    padding: SIZES.sm,
   },
   star: {
     fontSize: 48,
@@ -134,16 +136,16 @@ const styles = StyleSheet.create({
     color: '#FFD700',
   },
   ratingText: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 20,
+    fontSize: SIZES.fontMd,
+    color: COLORS.textLight,
+    marginBottom: SIZES.lg,
     fontStyle: 'italic',
   },
   submitButton: {
-    backgroundColor: '#FF8C42',
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: SIZES.lg,
+    paddingVertical: SIZES.md,
+    borderRadius: SIZES.radiusSm,
     width: '100%',
     alignItems: 'center',
   },
@@ -151,8 +153,8 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   submitButtonText: {
-    color: '#fff',
-    fontSize: 16,
+    color: COLORS.white,
+    fontSize: SIZES.fontLg,
     fontWeight: '600',
   },
 });

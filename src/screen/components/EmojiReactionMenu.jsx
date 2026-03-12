@@ -7,9 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useChatStore } from '../../../store/chatStore';
- 
-
-const EMOJI_SET = ['🙏', '✨', '🌙', '❤️', '👍', '🔥'];
+import { COLORS, SIZES, EMOJI_SET } from '../../constants/theme';
 
 export default function EmojiReactionMenu({ visible, messageId, onDismiss }) {
   const { toggleReaction } = useChatStore();
@@ -54,7 +52,7 @@ export default function EmojiReactionMenu({ visible, messageId, onDismiss }) {
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: COLORS.backdrop,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -63,24 +61,23 @@ const styles = StyleSheet.create({
   },
   emojiBar: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    backgroundColor: COLORS.white,
+    borderRadius: SIZES.radiusMd,
+    paddingHorizontal: SIZES.md,
+    paddingVertical: SIZES.md,
     justifyContent: 'space-around',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+   
+    
+    
+    
   },
   emojiButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: SIZES.sm,
+    paddingVertical: SIZES.sm,
+    borderRadius: SIZES.radiusSm,
   },
   emoji: {
-    fontSize: 28,
+    fontSize: SIZES.fontXxl,
   },
 });

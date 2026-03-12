@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -15,15 +15,38 @@ import {
   Gesture,
   GestureDetector,
 } from 'react-native-gesture-handler';
- 
+
 import FeedbackSection from './FeedbackSection';
 import ReactionBubbles from './ReactionBubbles';
 import { useChatStore } from '../../../store/chatStore';
+import { formatTime, getMessageType } from '../../utils/helpers';
+import {
+  COLORS,
+  SIZES,
+  ANIMATIONS,
+  SENDER_TYPES,
+  MESSAGE_TYPES,
+} from '../../constants/theme';
 
 export default function MessageBubble({ message, onLongPress, onReply }) {
   const translateX = useSharedValue(0);
   const { messageReactions } = useChatStore();
-  const reactions = messageReactions[message.id] || [];
+  const reaction = messageReactions[message.id];
+
+  const {
+    isSystemMessage,
+    isUserMessage,
+    isAIMessage,
+  } = getMessageType(message.sender, message.type);
+
+  // Extract pan gesture logic into reusable function
+  const handleGestureEnd = (event) => {
+    const shouldTriggerReply = event.translationX > ANIMATIONS.swipeThreshold;
+    if (shouldTriggerReply) {
+      runOnJS(onReply)();
+    }
+    translateX.value = withSpring(0, ANIMATIONS.springConfig);
+  };
 
   const panGesture = Gesture.Pan()
     .onUpdate((event) => {
@@ -31,24 +54,11 @@ export default function MessageBubble({ message, onLongPress, onReply }) {
         translateX.value = event.translationX;
       }
     })
-    .onEnd((event) => {
-      if (event.translationX > 80) {
-        // Trigger reply
-        runOnJS(onReply)();
-        translateX.value = withSpring(0);
-      } else {
-        translateX.value = withSpring(0);
-      }
-    });
+    .onEnd(handleGestureEnd);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
   }));
-
-  const isSystemMessage = message.type === 'event';
-  const isUserMessage = message.sender === 'user';
-  const isAIMessage = message.sender === 'ai_astrologer';
-  const isHumanMessage = message.sender === 'human_astrologer';
 
   if (isSystemMessage) {
     return (
@@ -69,12 +79,11 @@ export default function MessageBubble({ message, onLongPress, onReply }) {
         >
           <Pressable
             onLongPress={onLongPress}
-            delayLongPress={400}
+            delayLongPress={ANIMATIONS.longPressDelay}
             style={[
               styles.bubble,
               isUserMessage && styles.userBubble,
               isAIMessage && styles.aiBubble,
-              isHumanMessage && styles.humanBubble,
             ]}
           >
             <Text
@@ -86,16 +95,13 @@ export default function MessageBubble({ message, onLongPress, onReply }) {
               {message.text}
             </Text>
             <Text style={styles.timestamp}>
-              {new Date(message.timestamp).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
+              {formatTime(message.timestamp)}
             </Text>
           </Pressable>
 
           {/* Emoji Reactions */}
-          {reactions.length > 0 && (
-            <ReactionBubbles messageId={message.id} reactions={reactions} />
+          {reaction && (
+            <ReactionBubbles messageId={message.id} emoji={reaction} />
           )}
 
           {/* AI Feedback Section */}
@@ -110,7 +116,7 @@ export default function MessageBubble({ message, onLongPress, onReply }) {
 
 const styles = StyleSheet.create({
   messageContainer: {
-    marginVertical: 4,
+    marginVertical: SIZES.xs,
   },
   userMessageWrapper: {
     alignSelf: 'flex-end',
@@ -118,42 +124,38 @@ const styles = StyleSheet.create({
   },
   systemMessageContainer: {
     alignItems: 'center',
-    marginVertical: 12,
+    marginVertical: SIZES.lg,
   },
   systemMessageText: {
-    fontSize: 12,
-    color: '#888',
+    fontSize: SIZES.fontXs,
+    color: COLORS.systemText,
     fontStyle: 'italic',
   },
   bubble: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 12,
-    marginHorizontal: 8,
+    paddingHorizontal: SIZES.md,
+    paddingVertical: SIZES.sm,
+    borderRadius: SIZES.radiusMd,
+    marginHorizontal: SIZES.md,
   },
   userBubble: {
-    backgroundColor: '#FF8C42',
+    backgroundColor: COLORS.userBubble,
   },
   aiBubble: {
-    backgroundColor: '#E8F5E9',
-    marginLeft: 0,
-  },
-  humanBubble: {
-    backgroundColor: '#FFF3E0',
+    backgroundColor: COLORS.aiBubble,
     marginLeft: 0,
   },
   messageText: {
-    fontSize: 15,
-    color: '#333',
+    fontSize: SIZES.fontLg,
+    color: COLORS.text,
     lineHeight: 20,
   },
   userText: {
-    color: '#fff',
+    color: COLORS.white,
   },
   timestamp: {
-    fontSize: 11,
-    color: '#999',
-    marginTop: 4,
+    fontSize: SIZES.fontXs,
+    color: COLORS.textMuted,
+    marginTop: SIZES.xs,
     textAlign: 'right',
   },
 });

@@ -4,37 +4,41 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Animated,
 } from 'react-native';
 import { useChatStore } from '../../../store/chatStore';
- 
-
-const FEEDBACK_CHIPS = ['Inaccurate', 'Too Vague', 'Too Long'];
+import {
+  COLORS,
+  SIZES,
+  FEEDBACK_CHIPS,
+  FEEDBACK_OPTIONS,
+} from '../../constants/theme';
 
 export default function FeedbackSection({ messageId }) {
   const {
     selectedFeedback,
     expandedFeedback,
     setMessageFeedback,
-    toggleFeedbackExpanded,
     addFeedbackChip,
     removeFeedbackChip,
     selectedFeedbackChips,
   } = useChatStore();
 
   const feedback = selectedFeedback[messageId];
-  const isExpanded = expandedFeedback[messageId];
   const chips = selectedFeedbackChips[messageId] || [];
 
-  const handleLike = () => {
-    setMessageFeedback(messageId, 'liked');
+  /**
+   * Generic handler for feedback selection
+   * Single source of truth for like/dislike logic
+   */
+  const handleFeedback = (feedbackType) => {
+    setMessageFeedback(messageId, feedbackType);
   };
 
-  const handleDislike = () => {
-    setMessageFeedback(messageId, 'disliked');
-  };
-
-  const handleChipPress = (chip) => {
+  /**
+   * Generic handler for chip toggling
+   * Eliminates duplicate chip logic
+   */
+  const handleChipToggle = (chip) => {
     if (chips.includes(chip)) {
       removeFeedbackChip(messageId, chip);
     } else {
@@ -49,25 +53,25 @@ export default function FeedbackSection({ messageId }) {
         <TouchableOpacity
           style={[
             styles.button,
-            feedback === 'liked' && styles.activeButton,
+            feedback === FEEDBACK_OPTIONS.LIKED && styles.activeButton,
           ]}
-          onPress={handleLike}
+          onPress={() => handleFeedback(FEEDBACK_OPTIONS.LIKED)}
         >
           <Text style={styles.buttonText}>👍 Like</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
             styles.button,
-            feedback === 'disliked' && styles.dislikedButton,
+            feedback === FEEDBACK_OPTIONS.DISLIKED && styles.dislikedButton,
           ]}
-          onPress={handleDislike}
+          onPress={() => handleFeedback(FEEDBACK_OPTIONS.DISLIKED)}
         >
           <Text style={styles.buttonText}>👎 Dislike</Text>
         </TouchableOpacity>
       </View>
 
       {/* Expandable Feedback Chips */}
-      {feedback === 'disliked' && (
+      {feedback === FEEDBACK_OPTIONS.DISLIKED && (
         <View style={styles.chipsContainer}>
           {FEEDBACK_CHIPS.map((chip) => (
             <TouchableOpacity
@@ -76,7 +80,7 @@ export default function FeedbackSection({ messageId }) {
                 styles.chip,
                 chips.includes(chip) && styles.selectedChip,
               ]}
-              onPress={() => handleChipPress(chip)}
+              onPress={() => handleChipToggle(chip)}
             >
               <Text
                 style={[
@@ -96,58 +100,58 @@ export default function FeedbackSection({ messageId }) {
 
 const styles = StyleSheet.create({
   container: {
-    marginLeft: 8,
-    marginTop: 8,
+    marginLeft: SIZES.md,
+    marginTop: SIZES.md,
   },
   feedbackButtons: {
     flexDirection: 'row',
-    gap: 8,
+    gap: SIZES.sm,
   },
   button: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 6,
+    paddingHorizontal: SIZES.md,
+    paddingVertical: SIZES.xs,
+    backgroundColor: COLORS.background,
+    borderRadius: SIZES.radiusSm,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: COLORS.border,
   },
   activeButton: {
-    backgroundColor: '#E8F5E9',
-    borderColor: '#4CAF50',
+    backgroundColor: COLORS.aiBubble,
+    borderColor: COLORS.success,
   },
   dislikedButton: {
     backgroundColor: '#FFEBEE',
-    borderColor: '#f44336',
+    borderColor: COLORS.warning,
   },
   buttonText: {
-    fontSize: 12,
+    fontSize: SIZES.fontSm,
     fontWeight: '500',
-    color: '#333',
+    color: COLORS.text,
   },
   chipsContainer: {
     flexDirection: 'row',
-    gap: 6,
-    marginTop: 8,
+    gap: SIZES.xs,
+    marginTop: SIZES.xs,
     flexWrap: 'wrap',
   },
   chip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    backgroundColor: '#fff',
-    borderRadius: 6,
+    paddingHorizontal: SIZES.md,
+    paddingVertical: SIZES.xs,
+    backgroundColor: COLORS.white,
+    borderRadius: SIZES.radiusSm,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: COLORS.border,
   },
   selectedChip: {
-    backgroundColor: '#f44336',
-    borderColor: '#f44336',
+    backgroundColor: COLORS.warning,
+    borderColor: COLORS.warning,
   },
   chipText: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: SIZES.fontSm,
+    color: COLORS.textLight,
   },
   selectedChipText: {
-    color: '#fff',
+    color: COLORS.white,
     fontWeight: '600',
   },
 });
