@@ -38,8 +38,9 @@ MyNaksh Chat is a high-performance chat interface that demonstrates modern React
 
 ### Prerequisites
 - Node.js >= 22.11.0
-- Xcode (for iOS) or Android Studio (for Android)
-- React Native CLI
+- Xcode 15+ (for iOS) or Android Studio Hedgehog+ (for Android)
+- React Native CLI environment (Node.js, Watchman, CocoaPods, Android SDK)
+- macOS Sonoma or later (for iOS development)
 
 ### Step 1: Install Dependencies
 
@@ -50,32 +51,93 @@ npm install
 
 All required dependencies are already specified in `package.json`.
 
-### Step 2: iOS Setup (First Time Only)
+### Step 2: Android Setup
+
+Android development uses Android Studio emulator or connected device.
+
+```bash
+npm run android
+```
+
+### Step 3: iOS Setup
+
+iOS requires CocoaPods and Xcode configuration.
+
+#### 3.1 Install iOS Dependencies
 
 ```bash
 cd ios
-bundle install
-bundle exec pod install
+pod install
 cd ..
 ```
 
-### Step 3: Start Development Server
+If pods fail or you have cache issues:
+
+```bash
+cd ios
+rm -rf Pods Podfile.lock
+pod install
+cd ..
+```
+
+#### 3.2 Start Metro Bundler
 
 ```bash
 npm start
 ```
 
-### Step 4: Run on Device/Emulator
+#### 3.3 Run the iOS App
 
-#### Android
-```bash
-npm run android
-```
+In another terminal:
 
-#### iOS
 ```bash
 npm run ios
 ```
+
+Or open the project in Xcode manually:
+
+```bash
+open ios/MyNakshChat.xcworkspace
+```
+
+Then press the **Run ▶️** button in Xcode.
+
+⚠️ **Always open `.xcworkspace`, not `.xcodeproj`** — the workspace includes CocoaPods dependencies.
+
+#### 3.4 Configure Signing (First Time Only)
+
+If the build fails with:
+
+```
+Signing for "MyNakshChat" requires a development team
+```
+
+Do the following in Xcode:
+
+1. Open `ios/MyNakshChat.xcworkspace`
+2. Select **MyNakshChat → Signing & Capabilities**
+3. Enable **Automatically manage signing**
+4. Select your Apple ID development team
+
+You can add your Apple ID via:
+- **Xcode → Settings → Accounts**
+
+#### 3.5 Clean Build (if needed)
+
+If build fails after making changes:
+
+**In Xcode:**
+- **Product → Clean Build Folder**
+
+**Keyboard Shortcut:**
+- <kbd>Shift</kbd> + <kbd>Cmd</kbd> + <kbd>K</kbd>
+
+### Step 4: Verify Installation
+
+Your app should now be running on either:
+- ✅ Android emulator (`npm run android`)
+- ✅ iOS simulator (`npm run ios`)
+- ✅ Physical device (connected via USB)
 
 ## Implementation Details
 
@@ -337,7 +399,71 @@ Run tests:
 npm test
 ```
 
-## Troubleshooting
+## Reset Metro / Fix Build Issues
+
+If the app fails to start or you encounter JavaScript errors while developing:
+
+### Kill Metro Server and Reset Cache
+
+```bash
+# Kill any existing Metro server on port 8081
+kill -9 $(lsof -t -i:8081)
+
+# Start Metro with clean cache
+npm start -- --reset-cache
+```
+
+### Quick Restart Sequence
+
+```bash
+# 1. Stop the running app
+# 2. Kill Metro
+kill -9 $(lsof -t -i:8081)
+
+# 3. Clear watchman cache (if using it)
+watchman watch-del-all
+
+# 4. Restart Metro
+npm start -- --reset-cache
+
+# 5. In another terminal, rebuild and run
+npm run android  # or npm run ios
+```
+
+This solves 90% of build issues including:
+- ❌ Module not found errors
+- ❌ Syntax errors not clearing
+- ❌ Cache-related issues
+- ❌ Hot reload not working
+
+## Development Environment
+
+Tested and verified with:
+
+| Tool | Version | Notes |
+|------|---------|-------|
+| Node.js | 22.x | LTS recommended |
+| React Native | 0.84.1 | New Architecture support |
+| Xcode | 15+ | iOS development |
+| Android Studio | Hedgehog+ | Android development |
+| macOS | Sonoma+ | Latest recommended |
+| Reanimated | 4.2.2+ | GPU animations |
+| Gesture Handler | 2.30.0+ | Native gestures |
+| Zustand | 5.0.11+ | State management |
+
+### Minimal Setup to Run
+
+If you have the prerequisites installed, you can get the app running with:
+
+```bash
+npm install
+cd ios && pod install && cd ..
+npm start
+# In another terminal:
+npm run android  # or npm run ios
+```
+
+### Troubleshooting
 
 ### Metro Build Issues
 ```bash
