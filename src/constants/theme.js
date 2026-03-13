@@ -55,11 +55,7 @@ export const SIZES = {
 export const ANIMATIONS = {
   swipeThreshold: 80, // pixels to trigger reply
   longPressDelay: 400, // milliseconds
-  springConfig: {
-    damping: 10,
-    mass: 1,
-    overshootClamping: false,
-  },
+ 
 };
 
 export const MESSAGE_TYPES = {

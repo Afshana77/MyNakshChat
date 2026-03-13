@@ -30,8 +30,8 @@ import {
   ALERT_MESSAGES,
   TEXT_PLACEHOLDER,
 } from '../constants/theme';
- 
- 
+import Entypo from '@react-native-vector-icons/entypo';
+import Animated from 'react-native-reanimated';
 
 export default function ChatScreen() {
   const insets = useSafeAreaInsets();
@@ -53,7 +53,11 @@ export default function ChatScreen() {
   const handleSendMessage = useCallback(() => {
     if (!isValidMessage(messageInput)) return;
 
-    const newMessage = createUserMessage(messageInput, messages.length, replyingTo);
+    const newMessage = createUserMessage(
+      messageInput,
+      messages.length,
+      replyingTo,
+    );
     addMessage(newMessage);
     setMessageInput('');
     clearReply();
@@ -71,24 +75,27 @@ export default function ChatScreen() {
           style: 'destructive',
           onPress: () => setShowRating(true),
         },
-      ]
+      ],
     );
   }, []);
 
-  const handleRatingSubmit = useCallback((rating) => {
-    rateSession(rating);
-    setShowRating(false);
-    Alert.alert(
-      ALERT_MESSAGES.RATING_THANK_YOU,
-      formatRatingMessage(rating),
-      [
-        {
-          text: 'OK',
-          onPress: resetSession,
-        },
-      ]
-    );
-  }, [rateSession, resetSession]);
+  const handleRatingSubmit = useCallback(
+    rating => {
+      rateSession(rating);
+      setShowRating(false);
+      Alert.alert(
+        ALERT_MESSAGES.RATING_THANK_YOU,
+        formatRatingMessage(rating),
+        [
+          {
+            text: 'OK',
+            onPress: resetSession,
+          },
+        ],
+      );
+    },
+    [rateSession, resetSession],
+  );
 
   return (
     <KeyboardAvoidingView
@@ -99,10 +106,7 @@ export default function ChatScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Astrologer Vikram</Text>
-        <TouchableOpacity
-          style={styles.endChatButton}
-          onPress={handleEndChat}
-        >
+        <TouchableOpacity style={styles.endChatButton} onPress={handleEndChat}>
           <Text style={styles.endChatText}>End Chat</Text>
         </TouchableOpacity>
       </View>
@@ -111,7 +115,7 @@ export default function ChatScreen() {
       <FlatList
         ref={flatListRef}
         data={messages}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <MessageBubble
             message={item}
@@ -149,7 +153,7 @@ export default function ChatScreen() {
           onPress={handleSendMessage}
           disabled={!messageInput.trim()}
         >
-          <Text style={styles.sendButtonText}>→</Text>
+          <Entypo name="paper-plane" color="#ffff" size={20} />
         </TouchableOpacity>
       </View>
 
