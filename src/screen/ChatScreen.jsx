@@ -119,6 +119,7 @@ export default function ChatScreen() {
         renderItem={({ item }) => (
           <MessageBubble
             message={item}
+            messages={messages}
             onLongPress={() => emojiModal.showForMessage(item.id)}
             onReply={() => setReplyingTo(item.id)}
           />
