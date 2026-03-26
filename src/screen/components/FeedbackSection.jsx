@@ -16,7 +16,6 @@ import {
 export default function FeedbackSection({ messageId }) {
   const {
     selectedFeedback,
-    expandedFeedback,
     setMessageFeedback,
     addFeedbackChip,
     removeFeedbackChip,

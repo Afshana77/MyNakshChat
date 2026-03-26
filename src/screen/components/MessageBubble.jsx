@@ -18,8 +18,6 @@ import {
   COLORS,
   SIZES,
   ANIMATIONS,
-  SENDER_TYPES,
-  MESSAGE_TYPES,
 } from '../../constants/theme';
 import Entypo from '@react-native-vector-icons/entypo';
 
@@ -78,22 +76,41 @@ export default function MessageBubble({
     iconOpacity.value = withSpring(0);
   };
 
-  const panGesture = Gesture.Pan()
-    .activeOffsetX(10)
-    .failOffsetY([-5, 5])
-    .onUpdate(event => {
-      if (event.translationX > 0) {
-        translateX.value = event.translationX;
-        // Fade in the icon as user swipes
-        iconOpacity.value = interpolate(
-          event.translationX,
-          [0, 40],
-          [0, 1],
-          Extrapolate.CLAMP,
-        );
-      }
-    })
-    .onEnd(handleGestureEnd);
+const panGesture = Gesture.Pan() 
+  // Creates a pan (drag/swipe) gesture using Gesture Handler
+
+  .activeOffsetX(10) 
+  // Gesture will activate only when user moves finger at least 10px horizontally
+  // Prevents accidental small touches from triggering swipe
+
+  .failOffsetY([-5, 5]) 
+  // If user moves vertically more than 5px (up or down), gesture will fail
+  // This avoids conflict with FlatList vertical scrolling
+
+  .onUpdate(event => {
+    // Runs continuously while user is swiping (gesture in progress)
+
+    if (event.translationX > 0) {
+      // Allow only right swipe (positive X direction)
+
+      translateX.value = event.translationX;
+      // Update shared value with swipe distance
+      // This moves the message horizontally on UI thread
+
+      // Fade in the icon as user swipes
+      iconOpacity.value = interpolate(
+        event.translationX,
+        [0, 40],        // Input range: swipe distance from 0 to 40px
+        [0, 1],         // Output range: opacity from invisible (0) to visible (1)
+        Extrapolate.CLAMP, 
+        // Prevents value from going beyond 0–1 even if swipe exceeds 40px
+      );
+    }
+  })
+
+  .onEnd(handleGestureEnd); 
+  // Called when user releases the swipe
+  // Used to trigger reply action (if threshold crossed) and reset position
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
@@ -126,7 +143,11 @@ export default function MessageBubble({
             <Entypo name="reply" color="#ffff" size={24} />
           </Animated.View>
 
-          <Pressable
+          <Pressable onPress={() => {
+  if (message.status === 'failed') {
+    onReply?.(message); // or retry logic
+  }
+}}
             onLongPress={onLongPress}
             delayLongPress={ANIMATIONS.longPressDelay}
             style={[
@@ -150,6 +171,15 @@ export default function MessageBubble({
             <Text style={styles.timestamp}>
               {formatTime(message.timestamp)}
             </Text>
+            {isUserMessage && (
+    <Text style={styles.statusIcon}>
+      {message.status === 'sending' && '⏳'}
+      {message.status === 'sent' && '✓'}
+      {message.status === 'read' && '✓✓'}  
+      {message.status === 'failed' && '❌'}
+    </Text>
+  )}
+
           </Pressable>
 
           {/* Emoji Reactions */}
@@ -168,6 +198,18 @@ export default function MessageBubble({
 }
 
 const styles = StyleSheet.create({
+    footerRow: {
+  flexDirection: 'row',
+  justifyContent: 'flex-end',
+  alignItems: 'center',
+  marginTop: 4,
+},
+
+statusIcon: {
+  fontSize: 12,
+  marginLeft: 6,
+  color: '#999',
+},
   messageContainer: {
     marginVertical: SIZES.xs,
   },

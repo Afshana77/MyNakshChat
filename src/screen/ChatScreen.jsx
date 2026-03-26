@@ -25,15 +25,14 @@ import {
   formatRatingMessage,
 } from '../utils/helpers';
 import {
-  COLORS,
-  SIZES,
   ALERT_MESSAGES,
   TEXT_PLACEHOLDER,
 } from '../constants/theme';
 import Entypo from '@react-native-vector-icons/entypo';
-import Animated from 'react-native-reanimated';
+ import { useWebSocket } from '../hooks/useWebSocket';
 
 export default function ChatScreen() {
+ 
   const insets = useSafeAreaInsets();
   const {
     messages,
@@ -42,28 +41,94 @@ export default function ChatScreen() {
     clearReply,
     addMessage,
     rateSession,
-    resetSession,
+    resetSession,updateMessageStatus,replyMessage
   } = useChatStore();
-
+const { send } = useWebSocket((incomingMessage) => {
+  if (incomingMessage.type === 'ACK') {
+    updateMessageStatus(incomingMessage.id, 'sent');
+  } else {
+    addMessage({
+      ...incomingMessage,
+      status: 'sent',
+    });
+  }
+});
   const [messageInput, setMessageInput] = useState('');
   const [showRating, setShowRating] = useState(false);
   const emojiModal = useMessageModal();
   const flatListRef = useRef(null);
 
-  const handleSendMessage = useCallback(() => {
-    if (!isValidMessage(messageInput)) return;
+const handleSendMessage = useCallback(() => {
+  if (!isValidMessage(messageInput)) return;
 
-    const newMessage = createUserMessage(
+  const newMessage = {
+    ...createUserMessage(
       messageInput,
       messages.length,
       replyingTo,
-    );
-    addMessage(newMessage);
-    setMessageInput('');
-    clearReply();
-    scrollToEnd(flatListRef);
-  }, [messageInput, replyingTo, addMessage, clearReply, messages.length]);
+    ),
+    timestamp: Date.now(),
+    status: 'sending',
+  };
 
+  // ✅ Show immediately
+  addMessage(newMessage);
+
+  // ✅ Send
+  send(newMessage);
+
+  setMessageInput('');
+  clearReply();
+  scrollToEnd(flatListRef);
+
+  // 🔥 Prepare reply message ONCE
+  const replyMessage = {
+    id: Date.now().toString(),
+    text: "I understand your concern. Let me guide you.",
+    sender: 'human_astrologer',
+    timestamp: Date.now(),
+    type: 'human',
+    status: 'sent',
+  };
+
+  // ✅ Sent
+  setTimeout(() => {
+    updateMessageStatus(newMessage.id, 'sent');
+  }, 500);
+
+  // ✅ Read
+  setTimeout(() => {
+    updateMessageStatus(newMessage.id, 'read');
+  }, 1500);
+
+  // ✅ Typing indicator
+  setTimeout(() => {
+    addMessage({
+      id: 'typing',
+      text: 'Typing...',
+      sender: 'human_astrologer',
+      type: 'typing',
+    });
+  }, 1000);
+
+  // ✅ Replace typing with reply
+  setTimeout(() => {
+    useChatStore.setState((state) => ({
+      messages: state.messages.filter(m => m.id !== 'typing'),
+    }));
+
+    addMessage(replyMessage);
+  }, 2000);
+
+}, [
+  messageInput,
+  replyingTo,
+  messages.length,
+  addMessage,
+  clearReply,
+  send,
+  updateMessageStatus
+]);
   const handleEndChat = useCallback(() => {
     Alert.alert(
       ALERT_MESSAGES.END_CHAT_TITLE,

@@ -42,6 +42,7 @@ export const createUserMessage = (text, messageCount, replyTo = null) => ({
   text,
   timestamp: Date.now(),
   type: 'text',
+   status: 'sending',
   ...(replyTo && { replyTo }),
 });
 

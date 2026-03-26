@@ -60,11 +60,31 @@ export const useChatStore = create((set) => ({
   sessionRating: 0,
 
   // Message actions
-  addMessage: (message) =>
-    set((state) => ({
-      messages: [...state.messages, message],
-    })),
+addMessage: (message) =>
+  set((state) => {
+    const exists = state.messages.some((msg) => msg.id === message.id);
+    if (exists) return state;
 
+    // 🔥 Ensure timestamp exists
+    const messageWithTimestamp = {
+      ...message,
+      timestamp: message.timestamp || Date.now(),
+    };
+
+    const updatedMessages = [...state.messages, messageWithTimestamp].sort(
+      (a, b) => (a.timestamp || 0) - (b.timestamp || 0)
+    );
+
+    return {
+      messages: updatedMessages,
+    };
+  }),
+updateMessageStatus: (id, status) =>
+  set((state) => ({
+    messages: state.messages.map((msg) =>
+      msg.id === id ? { ...msg, status } : msg
+    ),
+  })),
   setReplyingTo: (messageId) =>
     set({
       replyingTo: messageId,
@@ -140,7 +160,7 @@ export const useChatStore = create((set) => ({
       sessionRated: true,
       sessionRating: rating,
     }),
-
+ 
   resetSession: () =>
     set({
       messages: INITIAL_MESSAGES,
@@ -153,3 +173,5 @@ export const useChatStore = create((set) => ({
       sessionRating: 0,
     }),
 }));
+
+
